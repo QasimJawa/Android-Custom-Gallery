@@ -6,6 +6,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.widget.PopupMenu
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -56,8 +57,8 @@ class MultiCustomGalleryUI : AppCompatActivity() {
         rv.adapter = adapter
 
 
-        adapter.setOnClickListener { galleryPicture ->
-            showToast(galleryPicture.path)
+        adapter.setOnClickListener { v, galleryPicture ->
+            showOptionsMenu(v, galleryPicture)
         }
 
 
@@ -85,6 +86,23 @@ class MultiCustomGalleryUI : AppCompatActivity() {
 
     }
 
+
+    private fun showOptionsMenu(anchor: View, galleryPicture: GalleryPicture) {
+        val popupMenu = PopupMenu(anchor.context, anchor)
+        val menu = popupMenu.menu
+        menu.add(0, 1, 0, "Show Path")
+        menu.add(0, 2, 0, "Delete")
+        popupMenu.show()
+        popupMenu.setOnMenuItemClickListener {
+            if (it.itemId == 1)
+                showToast(galleryPicture.path)
+            else {
+                adapter.deletePicture(galleryPicture)
+            }
+
+            true
+        }
+    }
 
     private fun getSelectedItemsCount() = adapter.getSelectedItems().size
 

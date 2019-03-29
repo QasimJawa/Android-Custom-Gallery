@@ -1,6 +1,7 @@
 package mobin.customgallery.multipicker.ui.gallery.adapter
 
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,18 +11,19 @@ import kotlinx.android.synthetic.main.multi_gallery_listitem.*
 import mobin.customgallery.multipicker.GlideApp
 import mobin.customgallery.multipicker.R
 import mobin.customgallery.multipicker.ui.gallery.model.GalleryPicture
+import java.io.File
 
-class GalleryPicturesAdapter(private val list: List<GalleryPicture>) : RecyclerView.Adapter<GVH>() {
+class GalleryPicturesAdapter(private val list: MutableList<GalleryPicture>) : RecyclerView.Adapter<GVH>() {
 
     init {
         initSelectedIndexList()
     }
 
-    constructor(list: List<GalleryPicture>, selectionLimit: Int) : this(list) {
+    constructor(list: MutableList<GalleryPicture>, selectionLimit: Int) : this(list) {
         setSelectionLimit(selectionLimit)
     }
 
-    private lateinit var onClick: (GalleryPicture) -> Unit
+    private lateinit var onClick: (View, GalleryPicture) -> Unit
     private lateinit var afterSelectionCompleted: () -> Unit
     private var isSelectionEnabled = false
     private lateinit var selectedIndexList: ArrayList<Int> // only limited items are selectable.
@@ -38,7 +40,7 @@ class GalleryPicturesAdapter(private val list: List<GalleryPicture>) : RecyclerV
         initSelectedIndexList()
     }
 
-    fun setOnClickListener(onClick: (GalleryPicture) -> Unit) {
+    fun setOnClickListener(onClick: (View, GalleryPicture) -> Unit) {
         this.onClick = onClick
     }
 
@@ -59,18 +61,20 @@ class GalleryPicturesAdapter(private val list: List<GalleryPicture>) : RecyclerV
 
     //    Useful Methods to provide delete feature.
 
-//    fun deletePicture(picture: GalleryPicture) {
-//        deletePicture(list.indexOf(picture))
-//    }
-//
-//    fun deletePicture(position: Int) {
-//        if (File(getItem(position).path).delete()) {
-//            list.removeAt(position)
-//            notifyItemRemoved(position)
-//        } else {
-//            Log.e("GalleryPicturesAdapter", "Deletion Failed")
-//        }
-//    }
+    fun deletePicture(picture: GalleryPicture) {
+        deletePicture(list.indexOf(picture))
+    }
+
+    private fun deletePicture(position: Int) {
+        val image = File(getItem(position).path)
+        val deleted = image.delete()
+        if (deleted) {
+            list.removeAt(position)
+            notifyItemRemoved(position)
+        } else {
+            Log.e("GalleryPicturesAdapter", "Deletion Failed")
+        }
+    }
 
     override fun onCreateViewHolder(p0: ViewGroup, p1: Int): GVH {
         val vh = GVH(LayoutInflater.from(p0.context).inflate(R.layout.multi_gallery_listitem, p0, false))
@@ -84,7 +88,7 @@ class GalleryPicturesAdapter(private val list: List<GalleryPicture>) : RecyclerV
                 afterSelectionCompleted()
 
             } else
-                onClick(picture)
+                onClick(it, picture)
 
 
         }
